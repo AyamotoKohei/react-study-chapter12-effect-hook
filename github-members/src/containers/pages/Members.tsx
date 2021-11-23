@@ -1,20 +1,30 @@
-import { VFC, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { VFC, useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 
-import { userSlice, UserState } from 'features/user';
-import { User } from 'domains/github/models/user';
-import Members from 'components/pages/Member';
+import { User, getMembers } from 'domains/github';
+import Members from 'components/pages/Members';
 
 const EnhancedMembers: VFC = () => {
-  const { orgCode = '' } = useParams<{ orgCode: string }>();
-  const dispatch = useDispatch();
-  const users = useSelector<UserState, User[]>((state) => state.users);
-  const isLoading = useSelector<UserState, boolean>((state) => state.isLoading);
+  const { orgCode = '' } = useParams();
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    dispatch(userSlice.actions.getMembersStarted({ orgCode }));
-  }, [orgCode, dispatch]);
+    const load = async (): Promise<void> => {
+      setIsLoading(true);
+
+      try {
+        const usersData = await getMembers(orgCode);
+        setUsers(usersData);
+      } catch (err) {
+        throw new Error(`organization '${orgCode}' not exists`);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    void load();
+  }, [orgCode]);
 
   return <Members {...{ orgCode, users, isLoading }} />;
 };
