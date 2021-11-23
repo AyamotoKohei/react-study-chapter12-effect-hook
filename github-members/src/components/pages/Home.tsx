@@ -1,6 +1,6 @@
 import { VFC } from 'react';
 import { Link } from 'react-router-dom';
-import { capitalize } from 'lodash';
+import capitalize from 'lodash/capitalize';
 import { List, ListContent } from 'semantic-ui-react';
 
 import './Home.css';

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useDispatch, useSelecter } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+
 import { User, getMembers } from 'domains/github';
 import { userSlice, UserState } from 'features/user';
 
@@ -10,7 +11,7 @@ type ReturnValue = {
 
 const useGetMembers = (orgCode: string): ReturnValue => {
   const [isLoading, setIsLoading] = useState(false);
-  const users = useSelecter<UserState, User[]>((state) => state.users);
+  const users = useSelector<UserState, User[]>((state) => state.users);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -26,7 +27,7 @@ const useGetMembers = (orgCode: string): ReturnValue => {
         if (!isUnmounted) {
           dispatch(membersGotten({ users }));
         }
-      } catch {
+      } catch (err) {
         throw new Error(`organization '${orgCode}' not exists`);
       } finally {
         setIsLoading(false);
