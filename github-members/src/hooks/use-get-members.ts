@@ -9,17 +9,24 @@ type ReturnValue = {
 };
 
 const useGetMembers = (orgCode: string): ReturnValue => {
-  const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const users = useSelecter<UserState, User[]>((state) => state.users);
+  const dispatch = useDispatch();
 
   useEffect(() => {
+    let isUnmounted = false;
+    const { membersGotten } = userSlice.actions;
+
     const load = async (): Promise<void> => {
       setIsLoading(true);
 
       try {
-        const usersData = await getMembers(orgCode);
-        setUsers(usersData);
-      } catch (err) {
+        const users = await getMembers(orgCode); // eslint-disable-line no-shadow
+
+        if (!isUnmounted) {
+          dispatch(membersGotten({ users }));
+        }
+      } catch {
         throw new Error(`organization '${orgCode}' not exists`);
       } finally {
         setIsLoading(false);
@@ -27,7 +34,11 @@ const useGetMembers = (orgCode: string): ReturnValue => {
     };
 
     void load();
-  }, [orgCode]);
+
+    return () => {
+      isUnmounted = true;
+    };
+  }, [orgCode, dispatch]);
 
   return { users, isLoading };
 };
